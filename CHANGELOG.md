@@ -5,7 +5,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [1.0.1] - 2026-06-21
+
+### Changed
+
+- README expanded with why, install, features, commands, and local setup (`1ca9202`)
+- Documentation, UI, and CI cleanup fixes (`36d7f7d`)
+
+### Fixed
+
+- Ecosystem benchmark and tests aligned with current organ CLI APIs (`a233c60`)
 
 ## [1.0.0] - 2026-06-20
 
