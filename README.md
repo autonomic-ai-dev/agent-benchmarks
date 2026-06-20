@@ -18,9 +18,14 @@ It provides a unified way to spin up the entire cluster of daemons and execute r
    pip install -r requirements.txt
    ```
 
-2. Run the integration test suite (this will automatically build and spin up the Docker Compose cluster):
+2. Run the integration test suite:
    ```bash
-   pytest integration/
+   docker-compose -f docker-compose.integration.yml up --build --abort-on-container-exit
+   ```
+
+3. Run the standalone test suite:
+   ```bash
+   docker-compose -f docker-compose.standalone.yml up --build --abort-on-container-exit
    ```
 
 ## Creating new tests

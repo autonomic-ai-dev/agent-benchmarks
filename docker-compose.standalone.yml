@@ -1,0 +1,33 @@
+version: '3.8'
+
+services:
+  # Base image containing all pre-installed organs
+  autonomic-base:
+    build:
+      context: ..
+      dockerfile: agent-benchmarks/docker/Dockerfile.agent
+    image: autonomic-benchmarks:latest
+    profiles:
+      - donotstart # We just use this to build the image
+
+  agent-brain:
+    image: autonomic-benchmarks:latest
+    volumes:
+      - autonomic-workspace:/root/.autonomic
+    ports:
+      - "3100:3100"
+    command: ["agent-brain", "serve"]
+
+  test-runner:
+    image: python:3.11-alpine
+    depends_on:
+      agent-brain:
+        condition: service_started
+    volumes:
+      - ./tests:/tests
+    working_dir: /tests
+    command: >
+      sh -c "pip install -r requirements.txt && pytest standalone/"
+
+volumes:
+  autonomic-workspace:
