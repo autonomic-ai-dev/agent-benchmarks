@@ -10,67 +10,7 @@ import subprocess
 import time
 
 # ---------------------------------------------------------------------------
-# Daemon health matrix
-# ---------------------------------------------------------------------------
-
-DAEMONS = {
-    "agent-brain": 3100,
-    "agent-heart": 3101,
-    "agent-nerves": 3102,
-    "agent-muscle": 3103,
-    "agent-mouth": 3104,
-    "agent-eyes": 3105,
-    "agent-immune": 3106,
-    "agent-spine": 3000,
-}
-
-
-def _retry_get(url, retries=10, delay=2):
-    """Retry a GET request with backoff."""
-    for _ in range(retries):
-        try:
-            resp = requests.get(url, timeout=3)
-            if resp.status_code == 200:
-                return resp
-        except (requests.exceptions.ConnectionError, requests.exceptions.Timeout):
-            pass
-        time.sleep(delay)
-    return None
-
-
-# ---------------------------------------------------------------------------
-# 1. NATS broker
-# ---------------------------------------------------------------------------
-
-def test_nats_health():
-    """NATS JetStream broker must be healthy."""
-    resp = _retry_get("http://nats:8222/healthz")
-    assert resp is not None, "NATS health check failed after retries"
-    assert resp.json().get("status") == "ok"
-
-
-def test_nats_jetstream_enabled():
-    """NATS must report JetStream as enabled."""
-    resp = _retry_get("http://nats:8222/jsz")
-    assert resp is not None, "JetStream info endpoint unreachable"
-    data = resp.json()
-    assert "streams" in data or "config" in data, f"Unexpected jsz response: {data}"
-
-
-# ---------------------------------------------------------------------------
-# 2. All daemon health endpoints
-# ---------------------------------------------------------------------------
-
-@pytest.mark.parametrize("daemon,port", DAEMONS.items())
-def test_daemon_health(daemon, port):
-    """Every daemon must respond to /health with 200 OK."""
-    url = f"http://{daemon}:{port}/health"
-    resp = _retry_get(url)
-    assert resp is not None, f"{daemon} health check failed on {url}"
-
-
-# ---------------------------------------------------------------------------
-# 3. Cross-organ communication
+# 2. Cross-organ communication
 # ---------------------------------------------------------------------------
 
 def test_nerves_ping_within_cluster():

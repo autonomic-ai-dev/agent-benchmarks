@@ -95,6 +95,8 @@ def write_report(eval_results, stats):
             f.write(f"## {name}\n\n")
             if r["stdout"]:
                 f.write(f"```\n{r['stdout'][-800:]}\n```\n\n")
+            if not r["passed"] and r["stderr"]:
+                f.write(f"**Stderr:**\n```\n{r['stderr'][-1000:]}\n```\n\n")
 
     print(f"\nReport written to benchmarks/results_accuracy.md")
 

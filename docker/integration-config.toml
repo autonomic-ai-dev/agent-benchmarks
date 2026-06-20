@@ -1,0 +1,38 @@
+[nerves]
+nats = { url = "nats://nats:4222", embedded = false }
+spine = { url = "http://agent-spine:3100" }
+server = { port = 3102 }
+
+[spine]
+nats = { url = "nats://nats:4222" }
+
+[heart]
+nats = { url = "nats://nats:4222" }
+spine = { url = "http://agent-spine:3100" }
+server = { port = 3101 }
+schedule = { enabled = false }
+
+[muscle]
+nats = { url = "nats://nats:4222" }
+spine = { url = "http://agent-spine:3100" }
+server = { port = 3103 }
+
+[immune]
+nats = { url = "nats://nats:4222" }
+spine = { url = "http://agent-spine:3100" }
+server = { port = 3106 }
+
+[eyes]
+nats = { url = "nats://nats:4222" }
+spine = { url = "http://agent-spine:3100" }
+server = { port = 3105 }
+
+[mouth]
+nats = { url = "nats://nats:4222" }
+spine = { url = "http://agent-spine:3100" }
+server = { port = 3104 }
+
+[body]
+nats = { url = "nats://nats:4222" }
+spine = { url = "http://agent-spine:3100" }
+server = { port = 3107 }

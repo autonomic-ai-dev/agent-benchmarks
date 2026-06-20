@@ -48,9 +48,14 @@ services:
     command: ["agent-muscle", "serve"]
 
   test-runner:
-    image: python:3.11-alpine
+    build:
+      context: ..
+      dockerfile: agent-benchmarks/docker/Dockerfile.test
     volumes:
       - ./tests:/tests
+      - ./benchmarks:/benchmarks
+      - ../agent-brain/docs:/tests/docs
+      - ../agent-brain/agent-brain/eval:/home/runner/work/agent-brain/agent-brain/agent-brain/eval
     working_dir: /tests
     # To test a standalone agent, you can pass an environment var indicating which one to test
     # e.g., TEST_TARGET=agent-brain

@@ -98,7 +98,7 @@ SCENARIOS = {
         {
             "id": "muscle_run",
             "name": "Execute echo command",
-            "cmd": ["agent-muscle", "run", "echo", "hello"],
+            "cmd": ["agent-muscle", "run", "echo hello"],
             "timeout": 10,
         },
     ],
@@ -122,7 +122,7 @@ SCENARIOS = {
         {
             "id": "mouth_validate",
             "name": "Validate safe command",
-            "cmd": ["agent-mouth", "validate", "echo hello"],
+            "cmd": ["agent-mouth", "validate", "--command", "echo hello"],
             "timeout": 10,
         },
     ],

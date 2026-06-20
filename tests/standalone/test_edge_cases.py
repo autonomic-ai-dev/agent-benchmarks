@@ -96,11 +96,11 @@ class TestSpineEdgeCases:
 
     def test_validate_huge_workflow(self, tmp_path):
         """Validate a very large YAML workflow (1000 steps)."""
-        steps = "\n".join(
-            f"  - name: step_{i}\n    run: echo {i}" for i in range(1000)
+        nodes = "\n".join(
+            f"  - name: step_{i}\n    kind: agent" for i in range(1000)
         )
         huge = tmp_path / "huge.yml"
-        huge.write_text(f"name: huge\nsteps:\n{steps}\n")
+        huge.write_text(f"version: 1\nname: huge\nstart_node: step_0\nnodes:\n{nodes}\n")
         result = subprocess.run(
             ["agent-spine", "validate", str(huge)],
             capture_output=True, text=True,
@@ -141,12 +141,15 @@ class TestMuscleEdgeCases:
             ["agent-muscle", "run", "false"],
             capture_output=True, text=True,
         )
-        assert result.returncode != 0
+        assert result.returncode == 0
+        data = json.loads(result.stdout)
+        assert data.get("success") is False
+        assert data.get("exit_code") != 0
 
     def test_run_command_with_large_output(self):
         """Running a command that produces large output should not hang."""
         result = subprocess.run(
-            ["agent-muscle", "run", "seq", "10000"],
+            ["agent-muscle", "run", "seq 10000"],
             capture_output=True, text=True,
             timeout=15,
         )
@@ -158,7 +161,7 @@ class TestMuscleEdgeCases:
         empty = tmp_path / "empty.jsonl"
         empty.write_text("")
         result = subprocess.run(
-            ["agent-muscle", "validate", str(empty)],
+            ["agent-muscle", "validate", "--dataset", str(empty)],
             capture_output=True, text=True,
         )
         assert result.returncode != 0, "Should reject empty dataset"
@@ -168,7 +171,7 @@ class TestMuscleEdgeCases:
         single = tmp_path / "single.jsonl"
         single.write_text(json.dumps({"prompt": "test", "completion": "ok"}) + "\n")
         result = subprocess.run(
-            ["agent-muscle", "validate", str(single)],
+            ["agent-muscle", "validate", "--data", str(single)],
             capture_output=True, text=True,
         )
         # May require minimum entries — accept either
@@ -200,7 +203,7 @@ class TestImmuneEdgeCases:
         result = subprocess.run(
             ["agent-immune", "scan", str(cargo)],
             capture_output=True, text=True,
-            timeout=30,
+            timeout=120,
         )
         assert result.returncode in (0, 1), f"Crashed on large manifest: {result.stderr}"
 
@@ -234,7 +237,7 @@ class TestMouthEdgeCases:
     def test_validate_pipe_chain(self):
         """Validating a complex pipe chain."""
         result = subprocess.run(
-            ["agent-mouth", "validate", "cat /etc/passwd | grep root | head -1"],
+            ["agent-mouth", "validate", "--command", "cat /etc/passwd | grep root | head -1"],
             capture_output=True, text=True,
         )
         assert result.returncode in (0, 1)

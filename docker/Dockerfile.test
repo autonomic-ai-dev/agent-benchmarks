@@ -1,0 +1,21 @@
+FROM ubuntu:24.04
+
+RUN apt-get update && apt-get install -y ca-certificates curl jq python3 python3-venv && rm -rf /var/lib/apt/lists/*
+
+# Set the environment variable for the install directory
+ENV INSTALL_DIR=/usr/local/bin
+ENV PATH="/usr/local/bin:${PATH}"
+
+# Setup Python virtual environment to avoid pip warnings
+ENV VIRTUAL_ENV=/opt/venv
+RUN python3 -m venv $VIRTUAL_ENV
+ENV PATH="$VIRTUAL_ENV/bin:$PATH"
+RUN pip install --upgrade pip
+
+# Create autonomic workspace directory
+RUN mkdir -p /root/.autonomic && chmod 777 /root/.autonomic
+
+# Run the installation script to download all release binaries
+RUN curl -fsSL https://raw.githubusercontent.com/autonomic-ai-dev/agent-body/master/scripts/install-all-organs.sh | bash
+
+WORKDIR /tests

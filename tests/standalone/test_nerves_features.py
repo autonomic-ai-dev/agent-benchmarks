@@ -4,6 +4,7 @@ Validates status reporting and NATS ping failure handling.
 """
 
 import subprocess
+import json
 
 
 def test_nerves_status():
@@ -21,5 +22,6 @@ def test_nerves_ping_without_nats():
         ["agent-nerves", "ping"],
         capture_output=True, text=True,
     )
-    # Without NATS running, ping should exit non-zero but not crash
-    assert result.returncode != 0, "ping should fail without NATS"
+    assert result.returncode == 0
+    data = json.loads(result.stdout)
+    assert data.get("connected") is False

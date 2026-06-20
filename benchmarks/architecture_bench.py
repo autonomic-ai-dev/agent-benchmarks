@@ -95,25 +95,30 @@ def test_deterministic_execution() -> dict:
     with tempfile.TemporaryDirectory() as tmpdir:
         wf_path = os.path.join(tmpdir, "strict.yml")
         with open(wf_path, "w") as f:
-            f.write("""name: deterministic_test
-steps:
+            f.write("""version: 1
+name: deterministic_test
+start_node: step1
+nodes:
   - name: step1
-    run: echo 'step 1'
+    kind: agent
   - name: step2
-    run: echo 'step 2'
+    kind: agent
+edges:
+  - from: step1
+    to: step2
 """)
         
-        # Run the workflow
+        my_env = os.environ.copy()
+        my_env["RUST_LOG"] = "info"
         result = subprocess.run(
             ["agent-spine", "run", wf_path],
-            capture_output=True, text=True, timeout=15
+            capture_output=True, text=True, timeout=15, env=my_env
         )
         
         elapsed = time.perf_counter() - start
         
-        # The output must contain step 1 and step 2 in order, and exit 0
-        stdout = result.stdout
-        passed = result.returncode == 0 and "step 1" in stdout and "step 2" in stdout
+        output = result.stdout + result.stderr
+        passed = result.returncode == 0 and "step1" in output and "step2" in output
         
         return {
             "claim": "Deterministic Execution (No Magic Prompts)",

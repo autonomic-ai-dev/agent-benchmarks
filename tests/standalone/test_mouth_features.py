@@ -18,7 +18,7 @@ def test_mouth_status():
 def test_mouth_validate_safe_command():
     """agent-mouth validate must accept a safe bash command."""
     result = subprocess.run(
-        ["agent-mouth", "validate", "echo hello"],
+        ["agent-mouth", "validate", "--command", "echo hello"],
         capture_output=True, text=True,
     )
     assert result.returncode == 0, f"validate rejected safe command: {result.stderr}"

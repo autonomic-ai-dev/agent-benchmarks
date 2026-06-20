@@ -44,7 +44,7 @@ def test_immune_scan_package_json(tmp_path):
 def test_immune_verify_memory():
     """agent-immune verify-memory must check for runaway memory growth."""
     result = subprocess.run(
-        ["agent-immune", "verify-memory"],
+        ["agent-immune", "verify-memory", "test_script.py"],
         capture_output=True, text=True,
     )
     # May succeed or fail depending on dataset — just must not crash

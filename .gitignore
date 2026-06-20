@@ -1,0 +1,9 @@
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.python-version
+output.log
+error.log
+benchmarks/results_*.json
+benchmarks/results_*.md
+tests/benchmarks/results*.md

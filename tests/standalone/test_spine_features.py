@@ -9,10 +9,12 @@ import pytest
 
 
 VALID_WORKFLOW = """\
+version: 1
 name: hello
-steps:
+start_node: greet
+nodes:
   - name: greet
-    run: echo hello
+    kind: agent
 """
 
 INVALID_WORKFLOW = """\

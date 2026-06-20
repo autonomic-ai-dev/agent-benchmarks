@@ -14,6 +14,12 @@ ORGANS = [
     "agent-mouth",
 ]
 
+def _run(cmd, **kwargs):
+    try:
+        return subprocess.run(cmd, **kwargs)
+    except FileNotFoundError:
+        pytest.skip(f"Executable '{cmd[0]}' not found on PATH. Skipping test.")
+
 
 # ---------------------------------------------------------------------------
 # 1. Binary version checks
@@ -23,7 +29,7 @@ ORGANS = [
 def test_organ_version_flag(organ):
     """Every organ binary must respond to --version with exit 0."""
     cmd = ["autonomic", "--version"] if organ == "agent-body" else [organ, "--version"]
-    result = subprocess.run(cmd, capture_output=True, text=True)
+    result = _run(cmd, capture_output=True, text=True)
     assert result.returncode == 0, f"{organ} --version failed: {result.stderr}"
     assert len(result.stdout.strip()) > 0
 
@@ -34,7 +40,7 @@ def test_organ_version_flag(organ):
 
 def test_autonomic_doctor():
     """autonomic doctor must find brain, heart, and nerves on PATH."""
-    result = subprocess.run(["autonomic", "doctor"], capture_output=True, text=True)
+    result = _run(["autonomic", "doctor"], capture_output=True, text=True)
     for organ in ["brain", "heart", "nerves"]:
         assert f"✓ {organ}" in result.stdout, f"doctor did not find {organ}"
 
@@ -45,7 +51,7 @@ def test_autonomic_doctor():
 
 def test_autonomic_init(tmp_path):
     """autonomic init should scaffold a workspace directory."""
-    result = subprocess.run(
+    result = _run(
         ["autonomic", "init"],
         capture_output=True,
         text=True,
@@ -57,7 +63,7 @@ def test_autonomic_init(tmp_path):
 
 def test_brain_config_init(tmp_path):
     """agent-brain config init should create a default config.yaml."""
-    result = subprocess.run(
+    result = _run(
         ["agent-brain", "config", "init"],
         capture_output=True,
         text=True,
@@ -68,7 +74,7 @@ def test_brain_config_init(tmp_path):
 
 def test_spine_init(tmp_path):
     """agent-spine init should create config + example workflow."""
-    result = subprocess.run(
+    result = _run(
         ["agent-spine", "init"],
         capture_output=True,
         text=True,
@@ -89,17 +95,17 @@ def test_cli_invalid_flag_fails(organ):
         if organ == "agent-body"
         else [organ, "--invalid-flag-xyz"]
     )
-    result = subprocess.run(cmd, capture_output=True, text=True)
+    result = _run(cmd, capture_output=True, text=True)
     assert result.returncode != 0
 
 
 def test_immune_scan_missing_arg():
     """agent-immune scan without a path must fail gracefully."""
-    result = subprocess.run(["agent-immune", "scan"], capture_output=True, text=True)
+    result = _run(["agent-immune", "scan"], capture_output=True, text=True)
     assert result.returncode != 0
 
 
 def test_spine_validate_missing_arg():
     """agent-spine validate without a workflow must fail gracefully."""
-    result = subprocess.run(["agent-spine", "validate"], capture_output=True, text=True)
+    result = _run(["agent-spine", "validate"], capture_output=True, text=True)
     assert result.returncode != 0

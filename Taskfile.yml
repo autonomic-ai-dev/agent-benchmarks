@@ -9,6 +9,7 @@ tasks:
     desc: "Build the generic autonomic-base docker image (fetches latest release binaries)"
     cmds:
       - docker-compose -f docker-compose.integration.yml build autonomic-base
+      - docker-compose -f docker-compose.standalone.yml build test-runner
 
   build:sandbox:
     desc: "Build the Docker sandbox image for isolated code execution"
@@ -45,6 +46,7 @@ tasks:
     desc: "Spin up the full autonomic cluster and run integration tests"
     deps: [clean]
     cmds:
+      - docker-compose -f docker-compose.standalone.yml run --rm test-runner sh -c 'agent-nerves status || true; agent-heart status || true; agent-muscle status || true; agent-immune status || true; agent-eyes status || true; agent-mouth status || true; agent-spine status || true; agent-body status || true; sed -i "s|nats://localhost:4222|nats://nats:4222|g" /root/.autonomic/config.toml; sed -i "s|http://localhost:3100|http://agent-spine:3100|g" /root/.autonomic/config.toml; sed -i "/\[nerves.nats\]/,/embedded/ s/embedded = true/embedded = false/" /root/.autonomic/config.toml; sed -i "/\[heart.schedule\]/,/enabled/ s/enabled = true/enabled = false/" /root/.autonomic/config.toml; cp /root/.autonomic/config.toml /tests/integration-config.toml'
       - docker-compose -f docker-compose.integration.yml up --build --abort-on-container-exit
 
   # ---------------------------------------------------------------------------
@@ -137,6 +139,7 @@ tasks:
   all:
     desc: "Run the complete test + benchmark pipeline and generate the scorecard"
     cmds:
+      - task: build
       - task: test:smoke
       - task: test:standalone
       - task: test:edge-cases

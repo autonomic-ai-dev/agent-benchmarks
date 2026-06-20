@@ -27,7 +27,7 @@ def test_heart_gc():
 def test_heart_budget():
     """agent-heart budget must produce token budget output."""
     result = subprocess.run(
-        ["agent-heart", "budget"],
+        ["agent-heart", "budget", "stats"],
         capture_output=True, text=True,
     )
     # budget may warn if no retrieval_log exists — accept 0 or graceful exit

@@ -21,15 +21,22 @@ services:
     profiles:
       - donotstart
 
+
   agent-body:
     image: autonomic-benchmarks:latest
     depends_on:
       nats:
         condition: service_healthy
+      agent-spine:
+        condition: service_healthy
     volumes:
       - autonomic-workspace:/root/.autonomic
+      - ./tests/integration-config.toml:/root/.autonomic/config.toml
     environment:
       - AUTONOMIC_NATS_URL=nats://nats:4222
+      - AUTONOMIC_SPINE_URL=http://agent-spine:3100
+      - AUTONOMIC_NERVES_NATS_EMBEDDED=false
+      - AUTONOMIC_HEART_SCHEDULE_ENABLED=false
     command: ["autonomic", "start"]
 
   agent-brain:
@@ -37,32 +44,53 @@ services:
     depends_on:
       nats:
         condition: service_healthy
+      agent-spine:
+        condition: service_healthy
     volumes:
       - autonomic-workspace:/root/.autonomic
+      - ./tests/integration-config.toml:/root/.autonomic/config.toml
     environment:
       - AUTONOMIC_NATS_URL=nats://nats:4222
-    command: ["agent-brain", "serve"]
+      - AUTONOMIC_SPINE_URL=http://agent-spine:3100
+      - AUTONOMIC_NERVES_NATS_EMBEDDED=false
+      - AUTONOMIC_HEART_SCHEDULE_ENABLED=false
+    command: ["agent-brain", "grpc", "serve", "--addr", "0.0.0.0:7842"]
 
   agent-spine:
     image: autonomic-benchmarks:latest
     depends_on:
       nats:
         condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3100/api/v1/health"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
     volumes:
       - autonomic-workspace:/root/.autonomic
+      - ./tests/integration-config.toml:/root/.autonomic/config.toml
     environment:
       - AUTONOMIC_NATS_URL=nats://nats:4222
-    command: ["agent-spine", "serve"]
+      - AUTONOMIC_SPINE_URL=http://agent-spine:3100
+      - AUTONOMIC_NERVES_NATS_EMBEDDED=false
+      - AUTONOMIC_HEART_SCHEDULE_ENABLED=false
+    command: ["agent-spine", "event", "serve", "--port", "3100"]
 
   agent-heart:
     image: autonomic-benchmarks:latest
     depends_on:
       nats:
         condition: service_healthy
+      agent-spine:
+        condition: service_healthy
     volumes:
       - autonomic-workspace:/root/.autonomic
+      - ./tests/integration-config.toml:/root/.autonomic/config.toml
     environment:
       - AUTONOMIC_NATS_URL=nats://nats:4222
+      - AUTONOMIC_SPINE_URL=http://agent-spine:3100
+      - AUTONOMIC_NERVES_NATS_EMBEDDED=false
+      - AUTONOMIC_HEART_SCHEDULE_ENABLED=false
     command: ["agent-heart", "serve"]
 
   agent-nerves:
@@ -70,10 +98,16 @@ services:
     depends_on:
       nats:
         condition: service_healthy
+      agent-spine:
+        condition: service_healthy
     volumes:
       - autonomic-workspace:/root/.autonomic
+      - ./tests/integration-config.toml:/root/.autonomic/config.toml
     environment:
       - AUTONOMIC_NATS_URL=nats://nats:4222
+      - AUTONOMIC_SPINE_URL=http://agent-spine:3100
+      - AUTONOMIC_NERVES_NATS_EMBEDDED=false
+      - AUTONOMIC_HEART_SCHEDULE_ENABLED=false
     command: ["agent-nerves", "serve"]
 
   agent-muscle:
@@ -81,10 +115,16 @@ services:
     depends_on:
       nats:
         condition: service_healthy
+      agent-spine:
+        condition: service_healthy
     volumes:
       - autonomic-workspace:/root/.autonomic
+      - ./tests/integration-config.toml:/root/.autonomic/config.toml
     environment:
       - AUTONOMIC_NATS_URL=nats://nats:4222
+      - AUTONOMIC_SPINE_URL=http://agent-spine:3100
+      - AUTONOMIC_NERVES_NATS_EMBEDDED=false
+      - AUTONOMIC_HEART_SCHEDULE_ENABLED=false
     command: ["agent-muscle", "serve"]
 
   agent-immune:
@@ -92,10 +132,16 @@ services:
     depends_on:
       nats:
         condition: service_healthy
+      agent-spine:
+        condition: service_healthy
     volumes:
       - autonomic-workspace:/root/.autonomic
+      - ./tests/integration-config.toml:/root/.autonomic/config.toml
     environment:
       - AUTONOMIC_NATS_URL=nats://nats:4222
+      - AUTONOMIC_SPINE_URL=http://agent-spine:3100
+      - AUTONOMIC_NERVES_NATS_EMBEDDED=false
+      - AUTONOMIC_HEART_SCHEDULE_ENABLED=false
     command: ["agent-immune", "serve"]
 
   agent-eyes:
@@ -103,10 +149,16 @@ services:
     depends_on:
       nats:
         condition: service_healthy
+      agent-spine:
+        condition: service_healthy
     volumes:
       - autonomic-workspace:/root/.autonomic
+      - ./tests/integration-config.toml:/root/.autonomic/config.toml
     environment:
       - AUTONOMIC_NATS_URL=nats://nats:4222
+      - AUTONOMIC_SPINE_URL=http://agent-spine:3100
+      - AUTONOMIC_NERVES_NATS_EMBEDDED=false
+      - AUTONOMIC_HEART_SCHEDULE_ENABLED=false
     command: ["agent-eyes", "serve"]
 
   agent-mouth:
@@ -114,14 +166,22 @@ services:
     depends_on:
       nats:
         condition: service_healthy
+      agent-spine:
+        condition: service_healthy
     volumes:
       - autonomic-workspace:/root/.autonomic
+      - ./tests/integration-config.toml:/root/.autonomic/config.toml
     environment:
       - AUTONOMIC_NATS_URL=nats://nats:4222
+      - AUTONOMIC_SPINE_URL=http://agent-spine:3100
+      - AUTONOMIC_NERVES_NATS_EMBEDDED=false
+      - AUTONOMIC_HEART_SCHEDULE_ENABLED=false
     command: ["agent-mouth", "serve"]
 
   test-runner:
-    image: python:3.11-alpine
+    build:
+      context: ..
+      dockerfile: agent-benchmarks/docker/Dockerfile.test
     depends_on:
       nats:
         condition: service_healthy
@@ -131,9 +191,16 @@ services:
         condition: service_started
     volumes:
       - ./tests:/tests
+      - ./benchmarks:/benchmarks
+      - ./tests/integration-config.toml:/root/.autonomic/config.toml
     working_dir: /tests
+    environment:
+      - AUTONOMIC_NATS_URL=nats://nats:4222
+      - AUTONOMIC_SPINE_URL=http://agent-spine:3100
+      - AUTONOMIC_NERVES_NATS_EMBEDDED=false
+      - AUTONOMIC_HEART_SCHEDULE_ENABLED=false
     command: >
-      sh -c "pip install -r requirements.txt && pytest integration/"
+      sh -c "pip install --break-system-packages -r requirements.txt && pytest integration/"
 
 volumes:
   nats-data:
