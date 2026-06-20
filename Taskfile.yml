@@ -16,6 +16,16 @@ tasks:
     cmds:
       - docker-compose -f docker-compose.integration.yml up --build --abort-on-container-exit
 
+  test:smoke:
+    desc: "Run basic standalone CLI smoke tests locally"
+    cmds:
+      - docker-compose -f docker-compose.integration.yml run --rm test-runner sh -c "pip install -r requirements.txt && pytest standalone/test_smoke.py"
+
+  benchmark:
+    desc: "Run the stress test against the cluster (requires cluster to be running)"
+    cmds:
+      - docker-compose -f docker-compose.integration.yml run --rm test-runner sh -c "pip install -r requirements.txt && python ../benchmarks/stress_test.py -c 100 -d 10"
+
   test:standalone:
     desc: "Run the standalone test suite for a specific organ (e.g., task test:standalone ORGAN=agent-brain)"
     deps: [clean]
