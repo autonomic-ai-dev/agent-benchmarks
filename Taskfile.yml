@@ -108,6 +108,14 @@ tasks:
     cmds:
       - python benchmarks/monolith_vs_autonomic.py --iterations {{.ITERATIONS}} --index-sizes 100,1000,5000,10000 --gpu-profile
 
+  benchmark:ecosystem:
+    desc: "Run comprehensive feature benchmark for the entire ecosystem (all organs, all features)"
+    vars:
+      ORGANS: '{{.ORGANS | default ""}}'
+      FEATURES: '{{.FEATURES | default ""}}'
+    cmds:
+      - python benchmarks/ecosystem_bench.py {{if .ORGANS}}--organs {{.ORGANS}}{{end}} {{if .FEATURES}}--features {{.FEATURES}}{{end}}
+
   # ---------------------------------------------------------------------------
   # Scorecard
   # ---------------------------------------------------------------------------
@@ -132,6 +140,7 @@ tasks:
       - task: benchmark:brain
       - task: benchmark:accuracy
       - task: benchmark:matrix:quick
+      - task: benchmark:ecosystem
       - task: scorecard
 
   # ---------------------------------------------------------------------------

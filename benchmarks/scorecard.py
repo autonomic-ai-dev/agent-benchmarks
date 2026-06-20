@@ -157,10 +157,15 @@ def generate_scorecard():
     stress_md = read_file("results.md")
     model_md = read_file("results_model.md")
     matrix_data = read_json("results_matrix.json")
+    eco_md = read_file("results_ecosystem.md")
+    eco_data = read_json("results_ecosystem.json")
     stats = get_brain_stats()
 
     brain_pass, brain_fail = count_pass_fail(brain_md)
     acc_pass, acc_fail = count_pass_fail(accuracy_md)
+
+    eco_passed = eco_data.get("passed", "N/A")
+    eco_total = eco_data.get("total_features", "N/A")
 
     # Extract key metrics
     index_total = stats.get("index", {}).get("total", "N/A")
@@ -249,6 +254,7 @@ so you know exactly where the system stands.
 | Binary Health | 9/9 organs installed |
 | Brain Benchmarks | {brain_pass} passed, {brain_fail} failed |
 | Accuracy Evals | {acc_pass} passed, {acc_fail} failed |
+| Ecosystem Features | {eco_passed}/{eco_total} features passed |
 | Resource Matrix | {matrix_passed}/{matrix_total} scenarios passed |
 
 """
@@ -283,6 +289,7 @@ so you know exactly where the system stands.
 
     # Append sub-report summaries
     for title, content, section_name in [
+        ("Ecosystem Feature Details", eco_md, "ecosystem"),
         ("Brain Benchmark Details", brain_md, "brain"),
         ("Accuracy Evaluation Details", accuracy_md, "accuracy"),
         ("Model Enhancement Results", model_md, "model"),
@@ -297,11 +304,13 @@ so you know exactly where the system stands.
 
     # Failures from matrix (agent-consumable)
     matrix_failures = matrix_data.get("failures", [])
-    if matrix_failures:
+    eco_failures = eco_data.get("failures", [])
+    all_failures = matrix_failures + eco_failures
+    if all_failures:
         sc += "---\n\n## ⚠️ Issues Requiring Attention\n\n"
         sc += "> These failures are formatted for automated agents to parse and fix.\n\n"
         sc += "```json\n"
-        sc += json.dumps(matrix_failures, indent=2)
+        sc += json.dumps(all_failures, indent=2)
         sc += "\n```\n\n"
 
     # Write outputs
@@ -315,6 +324,7 @@ so you know exactly where the system stands.
             "binary_health": "9/9",
             "brain_benchmarks": {"passed": brain_pass, "failed": brain_fail},
             "accuracy_evals": {"passed": acc_pass, "failed": acc_fail},
+            "ecosystem_features": {"passed": eco_passed, "total": eco_total},
             "resource_matrix": {"passed": matrix_passed, "total": matrix_total},
         },
         "performance": {
@@ -328,7 +338,7 @@ so you know exactly where the system stands.
         },
         "adoption_criteria": ADOPTION_CRITERIA,
         "metric_grades": metric_grades,
-        "failures": matrix_failures,
+        "failures": all_failures,
     }
     output_json = BENCHMARKS_DIR / "scorecard.json"
     output_json.write_text(json.dumps(scorecard_json, indent=2))
@@ -342,6 +352,7 @@ so you know exactly where the system stands.
     print(f"{'='*55}")
     print(f"  Brain benchmarks:    {brain_pass}✓  {brain_fail}✗")
     print(f"  Accuracy evals:      {acc_pass}✓  {acc_fail}✗")
+    print(f"  Ecosystem features:  {eco_passed}/{eco_total}")
     print(f"  Resource matrix:     {matrix_passed}/{matrix_total}")
     print(f"  Index size:          {index_total}")
     print(f"  Route p95:           {route_p95}ms")
