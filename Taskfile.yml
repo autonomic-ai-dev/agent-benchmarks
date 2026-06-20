@@ -116,6 +116,11 @@ tasks:
     cmds:
       - python benchmarks/ecosystem_bench.py {{if .ORGANS}}--organs {{.ORGANS}}{{end}} {{if .FEATURES}}--features {{.FEATURES}}{{end}}
 
+  benchmark:architecture:
+    desc: "Test the core architectural claims: Fault Isolation, Deterministic Execution, Data Sovereignty"
+    cmds:
+      - python benchmarks/architecture_bench.py
+
   # ---------------------------------------------------------------------------
   # Scorecard
   # ---------------------------------------------------------------------------
@@ -137,6 +142,7 @@ tasks:
       - task: test:edge-cases
       - task: test:integration
       - task: benchmark:stress
+      - task: benchmark:architecture
       - task: benchmark:brain
       - task: benchmark:accuracy
       - task: benchmark:matrix:quick
