@@ -87,6 +87,27 @@ tasks:
     cmds:
       - python benchmarks/resource_matrix.py --profiles minimal standard
 
+  benchmark:compare:
+    desc: "Run monolith vs autonomic head-to-head comparison at multiple index scales"
+    vars:
+      SIZES: '{{.SIZES | default "100,500,1000,2000,5000,10000"}}'
+    cmds:
+      - python benchmarks/monolith_vs_autonomic.py --index-sizes {{.SIZES}} --skip-endurance
+
+  benchmark:endurance:
+    desc: "Run 10k-iteration endurance loop (e.g., task benchmark:endurance ITERATIONS=10000)"
+    vars:
+      ITERATIONS: '{{.ITERATIONS | default "10000"}}'
+    cmds:
+      - python benchmarks/monolith_vs_autonomic.py --iterations {{.ITERATIONS}} --index-sizes 2000
+
+  benchmark:endurance:gpu:
+    desc: "Endurance loop with GPU profiling (requires nvidia-smi)"
+    vars:
+      ITERATIONS: '{{.ITERATIONS | default "10000"}}'
+    cmds:
+      - python benchmarks/monolith_vs_autonomic.py --iterations {{.ITERATIONS}} --index-sizes 100,1000,5000,10000 --gpu-profile
+
   # ---------------------------------------------------------------------------
   # Scorecard
   # ---------------------------------------------------------------------------
