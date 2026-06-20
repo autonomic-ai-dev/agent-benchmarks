@@ -1,8 +1,25 @@
-# Agent Benchmarks
+# agent-benchmarks
 
-Comprehensive testing, benchmarking, and adoption-confidence reporting for the [Autonomic AI](https://github.com/autonomic-ai-dev/agent-body) ecosystem.
+**Comprehensive testing, benchmarking, and adoption-confidence reporting for the Autonomic AI ecosystem.**
 
-## Architecture
+Part of the **[Autonomic AI](https://github.com/autonomic-ai-dev/agent-body)** stack. Validates every organ binary, runs Docker-based integration tests against a full cluster, and produces graded scorecards for CI and release gates.
+
+| Standalone | Integrated |
+|------------|------------|
+| `task test:smoke` | Uses release binaries from `install-all-organs.sh` |
+| Docker compose tiers | Probes NATS, spine, and organ HTTP health |
+| JSON/Markdown reports | Consumable by agent-spine CI and humans |
+
+---
+
+## Why agent-benchmarks?
+
+| Problem | agent-benchmarks answer |
+|---------|------------------------|
+| Organs ship without cross-checks | **6-tier pipeline** — smoke → standalone → integration → stress → accuracy → scorecard |
+| CLI drift breaks silently | **Standalone tests** — every organ feature exercised in Docker |
+| "Does the cluster work?" unknown | **Integration compose** — NATS + spine + all daemons |
+| No release confidence artifact | **Scorecard + ecosystem bench** — 43 features graded with thresholds |
 
 ```mermaid
 graph TD
@@ -27,79 +44,122 @@ graph TD
     S --> F --> I --> P --> A --> R
 ```
 
-## Quick Start
+---
+
+## Quick Install
+
+Prerequisites: [Docker](https://docs.docker.com/get-docker/), [Task](https://taskfile.dev/) (`brew install go-task`).
+
+Organ binaries are pulled inside Docker via [agent-body/install-all-organs.sh](https://github.com/autonomic-ai-dev/agent-body/blob/master/scripts/install-all-organs.sh) — no local Rust build required for `task all`.
 
 ```bash
-# Install task runner (if not already installed)
-brew install go-task
-
-# Run the complete pipeline
-task all
-
-# Or run individual tiers:
-task test:smoke              # CLI binary and config checks
-task test:standalone         # All organ feature tests
-task test:integration        # Full cluster health + cross-organ communication
-task benchmark:stress        # HTTP throughput across all daemons
-task benchmark:brain         # Native brain bench suite (latency gates)
-task benchmark:accuracy      # Recall@3, BEAM, token savings
-task benchmark:model MODEL=qwen2.5-coder:7b  # Before/after model comparison (Ollama)
-task scorecard               # Generate the Autonomic AI Scorecard
+git clone https://github.com/autonomic-ai-dev/agent-benchmarks.git && cd agent-benchmarks
+task build
+task test:smoke
 ```
 
-## Model Comparison
-
-The model comparison benchmark uses **Ollama** (local) or **HuggingFace Inference API** for pluggable open-source models. Generated code is executed in a **Docker sandbox** (`--network=none`, memory-limited) for safe verification.
+Full pipeline:
 
 ```bash
-# Using Ollama (default)
-task benchmark:model MODEL=codellama:7b
+task all
+```
 
-# Using HuggingFace
+---
+
+## Main features
+
+| Feature | Command | Why use it |
+|---------|---------|------------|
+| **Smoke tests** | `task test:smoke` | Every organ `--version` and CLI sanity |
+| **Standalone features** | `task test:standalone` | Per-organ CLI/API coverage |
+| **Integration cluster** | `task test:integration` | NATS + spine + cross-organ paths |
+| **HTTP stress** | `task benchmark:stress` | Throughput across daemon health endpoints |
+| **Brain bench suite** | `task benchmark:brain` | Latency gates, MCP, graphify, scale |
+| **Accuracy eval** | `task benchmark:accuracy` | Recall@3, BEAM, token savings |
+| **Ecosystem bench** | `task benchmark:ecosystem` | 43 features with graded thresholds |
+| **Architecture claims** | `task benchmark:architecture` | Fault isolation, determinism, sovereignty |
+| **Resource matrix** | `task benchmark:matrix:quick` | RAM/CPU profiles per organ |
+| **Scorecard** | `task scorecard` | Single adoption-confidence artifact |
+
+---
+
+## Commands
+
+| Command | Description |
+|---------|-------------|
+| `task build` | Build Docker test-runner and autonomic-base images |
+| `task test:smoke` | Tier 1 — CLI smoke |
+| `task test:standalone` | Tier 2 — all organ feature tests |
+| `task test:integration` | Tier 3 — full cluster in compose |
+| `task benchmark:stress` | HTTP stress against health endpoints |
+| `task benchmark:brain` | Native agent-brain bench suite |
+| `task benchmark:accuracy` | Recall@3 and BEAM evals |
+| `task benchmark:ecosystem` | 43-feature ecosystem benchmark |
+| `task benchmark:architecture` | Architecture claims validation |
+| `task benchmark:matrix:quick` | Resource matrix (minimal + standard) |
+| `task scorecard` | Generate `benchmarks/scorecard.md` |
+| `task all` | Complete pipeline (all tiers) |
+
+---
+
+## Model comparison
+
+Uses **Ollama** (local) or **HuggingFace Inference API**. Generated code runs in a **Docker sandbox** (`--network=none`, memory-limited).
+
+```bash
+task benchmark:model MODEL=codellama:7b
 HUGGINGFACE_TOKEN=hf_xxx task benchmark:model MODEL=bigcode/starcoder2-7b PROVIDER=huggingface
 ```
 
-## Scorecard
+---
 
-After running benchmarks, generate the adoption confidence scorecard:
+## Local setup
 
 ```bash
-task scorecard
+git clone https://github.com/autonomic-ai-dev/agent-benchmarks.git && cd agent-benchmarks
+brew install go-task
+task build
+task test:smoke
+task test:standalone
+# integration (requires Docker daemon):
+task test:integration
 ```
 
-This produces `benchmarks/scorecard.md` — a single artifact showing system health, performance metrics, accuracy evaluations, token savings, and model enhancement results.
+Reports land in `benchmarks/` (`results_*.md`, `results_*.json`, `scorecard.md`). Generated artifacts are gitignored.
 
-## Project Structure
+---
+
+## Project structure
 
 ```
 agent-benchmarks/
-├── Taskfile.yml                          # Task automation
-├── docker-compose.integration.yml        # Full cluster orchestration
-├── docker-compose.standalone.yml         # Isolated organ testing
-├── docker/
-│   └── Dockerfile.agent                  # Universal organ image
-├── tests/
-│   ├── requirements.txt
-│   ├── standalone/
-│   │   ├── test_smoke.py                 # Tier 1: CLI smoke tests
-│   │   ├── test_brain_features.py        # Tier 2: Brain features
-│   │   ├── test_spine_features.py
-│   │   ├── test_heart_features.py
-│   │   ├── test_nerves_features.py
-│   │   ├── test_muscle_features.py
-│   │   ├── test_immune_features.py
-│   │   ├── test_eyes_features.py
-│   │   └── test_mouth_features.py
-│   └── integration/
-│       └── test_cluster.py               # Tier 3: Cluster integration
-└── benchmarks/
-    ├── stress_test.py                    # Tier 4: HTTP throughput
-    ├── brain_bench.py                    # Tier 4: Native brain benchmarks
-    ├── accuracy_eval.py                  # Tier 5: Recall & token savings
-    ├── model_comparison.py              # Tier 5: Before/after with Ollama
-    ├── scorecard.py                      # Tier 6: Adoption scorecard
-    ├── prompts/
-    │   └── curated_prompts.json          # Standardized coding prompts
-    └── sandbox/
-        └── Dockerfile.sandbox            # Network-isolated code executor
+├── Taskfile.yml
+├── docker-compose.integration.yml
+├── docker-compose.standalone.yml
+├── docker/Dockerfile.test
+├── tests/standalone/          # per-organ pytest
+├── tests/integration/           # cluster pytest
+└── benchmarks/                # stress, brain, accuracy, ecosystem, scorecard
 ```
+
+Related repos: [agent-body](https://github.com/autonomic-ai-dev/agent-body) · [agent-brain](https://github.com/autonomic-ai-dev/agent-brain) · [agent-spine](https://github.com/autonomic-ai-dev/agent-spine)
+
+---
+
+## Development
+
+```bash
+task --list
+task test:edge-cases
+python benchmarks/ecosystem_bench.py --organs brain spine
+```
+
+---
+
+## Releases
+
+See [CHANGELOG.md](CHANGELOG.md). Tag `v1.0.0+` for benchmark suite milestones.
+
+## License
+
+MIT
