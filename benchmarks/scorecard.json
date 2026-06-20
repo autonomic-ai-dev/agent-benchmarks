@@ -1,0 +1,86 @@
+{
+  "generated_at": "2026-06-20 18:51:20 UTC",
+  "system_health": {
+    "binary_health": "9/9",
+    "brain_benchmarks": {
+      "passed": 0,
+      "failed": 0
+    },
+    "accuracy_evals": {
+      "passed": 0,
+      "failed": 0
+    },
+    "ecosystem_features": {
+      "passed": 43,
+      "total": 43
+    },
+    "resource_matrix": {
+      "passed": 26,
+      "total": 26
+    }
+  },
+  "performance": {
+    "index_size": "N/A",
+    "active_memories": "N/A",
+    "route_p95_ms": "N/A"
+  },
+  "value": {
+    "token_savings": "N/A",
+    "cost_avoided": "N/A"
+  },
+  "adoption_criteria": {
+    "recall_at_3": {
+      "metric": "Recall@3",
+      "unit": "%",
+      "exceptional": 90,
+      "good": 75,
+      "acceptable": 60,
+      "description": "Retrieval engine surfaces the correct skill/memory in top-3"
+    },
+    "route_p95_ms": {
+      "metric": "Route p95 Latency",
+      "unit": "ms",
+      "exceptional": 5,
+      "good": 20,
+      "acceptable": 50,
+      "description": "95th percentile latency for route_task calls",
+      "lower_is_better": true
+    },
+    "scale_10k_p95_ms": {
+      "metric": "Scale 10k p95",
+      "unit": "ms",
+      "exceptional": 15,
+      "good": 30,
+      "acceptable": 50,
+      "description": "ANN search latency at 10,000-item index scale",
+      "lower_is_better": true
+    },
+    "token_savings_pct": {
+      "metric": "Token Savings",
+      "unit": "%",
+      "exceptional": 95,
+      "good": 80,
+      "acceptable": 50,
+      "description": "Average context reduction per route_task call"
+    },
+    "keyword_accuracy_delta": {
+      "metric": "Model Enhancement (keyword accuracy)",
+      "unit": "% pts",
+      "exceptional": 30,
+      "good": 15,
+      "acceptable": 5,
+      "description": "Improvement in keyword accuracy when using agent-brain context"
+    },
+    "startup_time_s": {
+      "metric": "Cold Startup",
+      "unit": "s",
+      "exceptional": 2,
+      "good": 5,
+      "acceptable": 15,
+      "description": "Time from binary invocation to ready state",
+      "lower_is_better": true
+    }
+  },
+  "metric_grades": {},
+  "failures": []
+}

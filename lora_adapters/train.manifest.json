@@ -1,0 +1,22 @@
+{
+  "version": 1,
+  "backend": "mlx",
+  "model": "mlx-community/Llama-3.2-3B-Instruct-4bit",
+  "data_path": "/var/folders/hd/__pt79n12g95ndm8wm1gbbdm0000gn/T/autonomic_bench_gaa81lca/train_data",
+  "output_dir": "./lora_adapters",
+  "epochs": 3,
+  "learning_rate": 0.00001,
+  "lora_rank": 16,
+  "dataset": {
+    "valid": true,
+    "path": "/var/folders/hd/__pt79n12g95ndm8wm1gbbdm0000gn/T/autonomic_bench_gaa81lca/train_data",
+    "files_scanned": 1,
+    "entries": 5,
+    "invalid_lines": 0,
+    "empty_instruction": 0,
+    "empty_response": 0,
+    "min_entries_required": 1,
+    "errors": []
+  },
+  "created_at": "2026-06-20T18:51:14.727039+00:00"
+}
