@@ -15,12 +15,17 @@ services:
       timeout: 5s
       retries: 5
 
-  agent-body:
+  # Base image containing all pre-installed organs
+  autonomic-base:
     build:
       context: ..
       dockerfile: agent-benchmarks/docker/Dockerfile.agent
-      args:
-        ORGAN: agent-body
+    image: autonomic-benchmarks:latest
+    profiles:
+      - donotstart # We just use this to build the image
+
+  agent-body:
+    image: autonomic-benchmarks:latest
     depends_on:
       nats:
         condition: service_healthy
@@ -28,14 +33,10 @@ services:
       - autonomic-workspace:/root/.autonomic
     environment:
       - AUTONOMIC_NATS_URL=nats://nats:4222
-    command: ["start"]
+    command: ["autonomic", "start"]
 
   agent-brain:
-    build:
-      context: ..
-      dockerfile: agent-benchmarks/docker/Dockerfile.agent
-      args:
-        ORGAN: agent-brain
+    image: autonomic-benchmarks:latest
     depends_on:
       nats:
         condition: service_healthy
@@ -45,7 +46,7 @@ services:
       - AUTONOMIC_NATS_URL=nats://nats:4222
     ports:
       - "3100:3100"
-    command: ["serve"]
+    command: ["agent-brain", "serve"]
 
 volumes:
   nats-data:

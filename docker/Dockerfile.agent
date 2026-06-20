@@ -1,50 +1,25 @@
-# This Dockerfile is meant to be built from the root of the autonomic-ai-dev workspace.
-# It expects the source code for the specific organ to be available.
-
-FROM rust:1.79-slim as builder
-
-# Install build dependencies
-RUN apt-get update && apt-get install -y \
-    pkg-config \
-    libssl-dev \
-    git \
-    build-essential \
-    && rm -rf /var/lib/apt/lists/*
-
-ARG ORGAN
-
-WORKDIR /usr/src/app
-
-# We copy the entire workspace to build the specific organ
-# In a real CI environment, you might only copy the specific crate and its local dependencies
-COPY . .
-
-RUN cd ${ORGAN} && cargo build --release
-
-# -----------------
-# Runtime stage
-# -----------------
 FROM debian:bookworm-slim
 
+# Install dependencies required by the installation script and NATS (for tests if needed)
 RUN apt-get update && apt-get install -y \
     ca-certificates \
     curl \
+    jq \
     && rm -rf /var/lib/apt/lists/*
 
-ARG ORGAN
+# Set the environment variable for the install directory
+ENV INSTALL_DIR=/usr/local/bin
+ENV PATH="/usr/local/bin:${PATH}"
 
-# Copy the compiled binary from the builder stage
-COPY --from=builder /usr/src/app/${ORGAN}/target/release/${ORGAN} /usr/local/bin/${ORGAN}
-
-# Make sure it's executable
-RUN chmod +x /usr/local/bin/${ORGAN}
-
-# Create autonomic root directory
+# Create autonomic workspace directory
 RUN mkdir -p /root/.autonomic && chmod 777 /root/.autonomic
 
-# Expose generic port (each daemon uses a different one, but we map them in compose)
+# Run the installation script to download all release binaries
+RUN curl -fsSL https://raw.githubusercontent.com/autonomic-ai-dev/agent-body/master/scripts/install-all-organs.sh | bash
+
+# Expose generic ports used by the daemons
 EXPOSE 3100 3101 3102 3103 3104 3105 3106
 
-# The command is overridden by docker-compose
+# The command is overridden by docker-compose for each specific daemon
 ENTRYPOINT ["sh", "-c", "exec $0 \"$@\""]
-CMD ["${ORGAN}", "--version"]
+CMD ["autonomic", "--help"]
