@@ -1,0 +1,22 @@
+# Minimal sandbox image for executing model-generated code safely.
+# No network access, limited resources, ephemeral.
+
+FROM python:3.11-alpine
+
+RUN apk add --no-cache \
+    bash \
+    nodejs \
+    npm \
+    && pip install --no-cache-dir pytest requests
+
+# Create a non-root user for sandboxed execution
+RUN adduser -D -s /bin/sh sandbox
+USER sandbox
+WORKDIR /home/sandbox
+
+# No network — docker run --network=none
+# No volumes — ephemeral execution only
+# Resource limits applied via docker run flags
+
+ENTRYPOINT ["/bin/sh", "-c"]
+CMD ["echo 'sandbox ready'"]

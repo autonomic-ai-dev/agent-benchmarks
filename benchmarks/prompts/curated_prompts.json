@@ -1,0 +1,82 @@
+[
+  {
+    "id": "add_logging",
+    "task": "Add structured logging to this Python function using the standard library logging module. Log the input, output, and any errors.",
+    "code": "def fetch_user(user_id: int) -> dict:\n    db = get_connection()\n    row = db.execute('SELECT * FROM users WHERE id = ?', (user_id,)).fetchone()\n    if not row:\n        raise ValueError(f'User {user_id} not found')\n    return dict(row)",
+    "language": "python",
+    "expected_keywords": ["logging", "logger", "info", "error", "exception"],
+    "category": "enhancement"
+  },
+  {
+    "id": "fix_sql_injection",
+    "task": "Fix the SQL injection vulnerability in this function.",
+    "code": "def search_users(name: str) -> list:\n    db = get_connection()\n    query = f\"SELECT * FROM users WHERE name LIKE '%{name}%'\"\n    return db.execute(query).fetchall()",
+    "language": "python",
+    "expected_keywords": ["parameterized", "?", "placeholder"],
+    "category": "security"
+  },
+  {
+    "id": "add_error_handling",
+    "task": "Add comprehensive error handling to this HTTP client function. Handle network errors, timeouts, and invalid JSON responses.",
+    "code": "import requests\n\ndef get_weather(city: str) -> dict:\n    response = requests.get(f'https://api.weather.com/v1/{city}')\n    return response.json()",
+    "language": "python",
+    "expected_keywords": ["try", "except", "timeout", "JSONDecodeError", "RequestException"],
+    "category": "robustness"
+  },
+  {
+    "id": "refactor_to_immutable",
+    "task": "Refactor this function to use immutable data patterns. Do not mutate the input list; return a new list instead.",
+    "code": "def process_orders(orders: list[dict]) -> list[dict]:\n    for order in orders:\n        order['total'] = order['quantity'] * order['price']\n        order['status'] = 'processed'\n    return orders",
+    "language": "python",
+    "expected_keywords": ["new", "copy", "spread", "comprehension", "append"],
+    "category": "refactoring"
+  },
+  {
+    "id": "write_unit_test",
+    "task": "Write pytest unit tests for this function covering normal cases, edge cases, and error cases. Follow the AAA pattern.",
+    "code": "def calculate_discount(price: float, discount_percent: float) -> float:\n    if price < 0:\n        raise ValueError('Price cannot be negative')\n    if not 0 <= discount_percent <= 100:\n        raise ValueError('Discount must be between 0 and 100')\n    return round(price * (1 - discount_percent / 100), 2)",
+    "language": "python",
+    "expected_keywords": ["def test_", "assert", "pytest.raises", "ValueError"],
+    "category": "testing"
+  },
+  {
+    "id": "optimize_n_plus_1",
+    "task": "Optimize this code to avoid the N+1 query problem. Fetch all related data in a single query.",
+    "code": "def get_orders_with_items(db):\n    orders = db.execute('SELECT * FROM orders').fetchall()\n    result = []\n    for order in orders:\n        items = db.execute('SELECT * FROM items WHERE order_id = ?', (order['id'],)).fetchall()\n        result.append({'order': dict(order), 'items': [dict(i) for i in items]})\n    return result",
+    "language": "python",
+    "expected_keywords": ["JOIN", "single query", "batch"],
+    "category": "performance"
+  },
+  {
+    "id": "add_type_hints_rust",
+    "task": "Add proper error handling to this Rust function using Result<T, E> and the ? operator. Replace all unwrap() calls.",
+    "code": "use std::fs;\n\nfn read_config(path: &str) -> Config {\n    let content = fs::read_to_string(path).unwrap();\n    let config: Config = serde_json::from_str(&content).unwrap();\n    config\n}",
+    "language": "rust",
+    "expected_keywords": ["Result", "?", "anyhow", "Error", "map_err"],
+    "category": "robustness"
+  },
+  {
+    "id": "fix_race_condition",
+    "task": "Fix the race condition in this TypeScript function. Ensure the counter is incremented atomically.",
+    "code": "let requestCount = 0;\n\nasync function handleRequest(req: Request): Promise<Response> {\n  requestCount++;\n  const result = await processRequest(req);\n  requestCount--;\n  return result;\n}",
+    "language": "typescript",
+    "expected_keywords": ["atomic", "mutex", "lock", "semaphore", "concurrent"],
+    "category": "concurrency"
+  },
+  {
+    "id": "implement_retry",
+    "task": "Implement exponential backoff retry logic for this function. Retry up to 3 times with increasing delays.",
+    "code": "async function fetchData(url: string): Promise<any> {\n  const response = await fetch(url);\n  if (!response.ok) throw new Error(`HTTP ${response.status}`);\n  return response.json();\n}",
+    "language": "typescript",
+    "expected_keywords": ["retry", "backoff", "delay", "attempt", "sleep"],
+    "category": "robustness"
+  },
+  {
+    "id": "add_input_validation",
+    "task": "Add input validation using Zod schemas to this Express endpoint. Validate the request body before processing.",
+    "code": "app.post('/api/users', async (req, res) => {\n  const { name, email, age } = req.body;\n  const user = await db.users.create({ name, email, age });\n  res.json(user);\n});",
+    "language": "typescript",
+    "expected_keywords": ["z.object", "z.string", "parse", "safeParse", "zod"],
+    "category": "validation"
+  }
+]

@@ -10,32 +10,95 @@ tasks:
     cmds:
       - docker-compose -f docker-compose.integration.yml build autonomic-base
 
+  build:sandbox:
+    desc: "Build the Docker sandbox image for isolated code execution"
+    cmds:
+      - docker build -t autonomic-sandbox:latest -f benchmarks/sandbox/Dockerfile.sandbox benchmarks/sandbox/
+
+  # ---------------------------------------------------------------------------
+  # Testing
+  # ---------------------------------------------------------------------------
+
+  test:smoke:
+    desc: "Run CLI binary and config smoke tests"
+    cmds:
+      - docker-compose -f docker-compose.standalone.yml run --rm test-runner sh -c "pip install -r requirements.txt && pytest standalone/test_smoke.py -v"
+
+  test:standalone:
+    desc: "Run all standalone feature tests for every organ"
+    cmds:
+      - docker-compose -f docker-compose.standalone.yml run --rm test-runner sh -c "pip install -r requirements.txt && pytest standalone/ -v"
+
+  test:standalone:organ:
+    desc: "Run standalone tests for a specific organ (e.g., task test:standalone:organ ORGAN=brain)"
+    requires:
+      vars: [ORGAN]
+    cmds:
+      - docker-compose -f docker-compose.standalone.yml run --rm test-runner sh -c "pip install -r requirements.txt && pytest standalone/test_{{.ORGAN}}_features.py -v"
+
   test:integration:
-    desc: "Spin up the full autonomic cluster and run the integration test suite"
+    desc: "Spin up the full autonomic cluster and run integration tests"
     deps: [clean]
     cmds:
       - docker-compose -f docker-compose.integration.yml up --build --abort-on-container-exit
 
-  test:smoke:
-    desc: "Run basic standalone CLI smoke tests locally"
-    cmds:
-      - docker-compose -f docker-compose.integration.yml run --rm test-runner sh -c "pip install -r requirements.txt && pytest standalone/test_smoke.py"
+  # ---------------------------------------------------------------------------
+  # Benchmarks
+  # ---------------------------------------------------------------------------
 
-  benchmark:
-    desc: "Run the stress test against the cluster (requires cluster to be running)"
+  benchmark:stress:
+    desc: "Run HTTP stress test against all daemon health endpoints"
     cmds:
-      - docker-compose -f docker-compose.integration.yml run --rm test-runner sh -c "pip install -r requirements.txt && python ../benchmarks/stress_test.py -c 100 -d 10"
+      - docker-compose -f docker-compose.integration.yml run --rm test-runner sh -c "pip install -r requirements.txt && python /benchmarks/stress_test.py -c 50 -d 15"
 
-  test:standalone:
-    desc: "Run the standalone test suite for a specific organ (e.g., task test:standalone ORGAN=agent-brain)"
-    deps: [clean]
-    requires:
-      vars: [ORGAN]
+  benchmark:brain:
+    desc: "Run agent-brain native benchmark suite (latency, MCP, scale, supervisor, graphify)"
     cmds:
-      - docker-compose -f docker-compose.standalone.yml --profile {{.ORGAN}} up --build --abort-on-container-exit
+      - docker-compose -f docker-compose.standalone.yml run --rm test-runner sh -c "pip install -r requirements.txt && python /benchmarks/brain_bench.py"
+
+  benchmark:accuracy:
+    desc: "Run accuracy evaluations (Recall@3, skills.sh, BEAM, token savings)"
+    cmds:
+      - docker-compose -f docker-compose.standalone.yml run --rm test-runner sh -c "pip install -r requirements.txt && python /benchmarks/accuracy_eval.py"
+
+  benchmark:model:
+    desc: "Run before/after model comparison (requires Ollama; e.g., task benchmark:model MODEL=qwen2.5-coder:7b)"
+    vars:
+      MODEL: '{{.MODEL | default "qwen2.5-coder:7b"}}'
+      PROVIDER: '{{.PROVIDER | default "ollama"}}'
+    cmds:
+      - python benchmarks/model_comparison.py --model {{.MODEL}} --provider {{.PROVIDER}} --build-sandbox
+
+  # ---------------------------------------------------------------------------
+  # Scorecard
+  # ---------------------------------------------------------------------------
+
+  scorecard:
+    desc: "Generate the Autonomic AI Scorecard (aggregates all benchmark results)"
+    cmds:
+      - python benchmarks/scorecard.py
+
+  # ---------------------------------------------------------------------------
+  # Full pipeline
+  # ---------------------------------------------------------------------------
+
+  all:
+    desc: "Run the complete test + benchmark pipeline and generate the scorecard"
+    cmds:
+      - task: test:smoke
+      - task: test:standalone
+      - task: test:integration
+      - task: benchmark:stress
+      - task: benchmark:brain
+      - task: benchmark:accuracy
+      - task: scorecard
+
+  # ---------------------------------------------------------------------------
+  # Utilities
+  # ---------------------------------------------------------------------------
 
   clean:
-    desc: "Tear down all running test containers and remove isolated volumes"
+    desc: "Tear down all running test containers and remove volumes"
     cmds:
       - docker-compose -f docker-compose.integration.yml down -v || true
       - docker-compose -f docker-compose.standalone.yml down -v || true
