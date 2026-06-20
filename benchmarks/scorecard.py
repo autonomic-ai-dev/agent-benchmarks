@@ -159,6 +159,7 @@ def generate_scorecard():
     matrix_data = read_json("results_matrix.json")
     eco_md = read_file("results_ecosystem.md")
     eco_data = read_json("results_ecosystem.json")
+    arch_md = read_file("results_architecture.md")
     stats = get_brain_stats()
 
     brain_pass, brain_fail = count_pass_fail(brain_md)
@@ -289,6 +290,7 @@ so you know exactly where the system stands.
 
     # Append sub-report summaries
     for title, content, section_name in [
+        ("Architecture Claims", arch_md, "architecture"),
         ("Ecosystem Feature Details", eco_md, "ecosystem"),
         ("Brain Benchmark Details", brain_md, "brain"),
         ("Accuracy Evaluation Details", accuracy_md, "accuracy"),
