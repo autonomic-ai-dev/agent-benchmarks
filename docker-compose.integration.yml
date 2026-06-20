@@ -15,14 +15,13 @@ services:
       timeout: 5s
       retries: 5
 
-  # Base image containing all pre-installed organs
   autonomic-base:
     build:
       context: ..
       dockerfile: agent-benchmarks/docker/Dockerfile.agent
     image: autonomic-benchmarks:latest
     profiles:
-      - donotstart # We just use this to build the image
+      - donotstart
 
   agent-body:
     image: autonomic-benchmarks:latest
@@ -44,9 +43,84 @@ services:
       - autonomic-workspace:/root/.autonomic
     environment:
       - AUTONOMIC_NATS_URL=nats://nats:4222
-    ports:
-      - "3100:3100"
     command: ["agent-brain", "serve"]
+
+  agent-spine:
+    image: autonomic-benchmarks:latest
+    depends_on:
+      nats:
+        condition: service_healthy
+    volumes:
+      - autonomic-workspace:/root/.autonomic
+    environment:
+      - AUTONOMIC_NATS_URL=nats://nats:4222
+    command: ["agent-spine", "serve"]
+
+  agent-heart:
+    image: autonomic-benchmarks:latest
+    depends_on:
+      nats:
+        condition: service_healthy
+    volumes:
+      - autonomic-workspace:/root/.autonomic
+    environment:
+      - AUTONOMIC_NATS_URL=nats://nats:4222
+    command: ["agent-heart", "serve"]
+
+  agent-nerves:
+    image: autonomic-benchmarks:latest
+    depends_on:
+      nats:
+        condition: service_healthy
+    volumes:
+      - autonomic-workspace:/root/.autonomic
+    environment:
+      - AUTONOMIC_NATS_URL=nats://nats:4222
+    command: ["agent-nerves", "serve"]
+
+  agent-muscle:
+    image: autonomic-benchmarks:latest
+    depends_on:
+      nats:
+        condition: service_healthy
+    volumes:
+      - autonomic-workspace:/root/.autonomic
+    environment:
+      - AUTONOMIC_NATS_URL=nats://nats:4222
+    command: ["agent-muscle", "serve"]
+
+  agent-immune:
+    image: autonomic-benchmarks:latest
+    depends_on:
+      nats:
+        condition: service_healthy
+    volumes:
+      - autonomic-workspace:/root/.autonomic
+    environment:
+      - AUTONOMIC_NATS_URL=nats://nats:4222
+    command: ["agent-immune", "serve"]
+
+  agent-eyes:
+    image: autonomic-benchmarks:latest
+    depends_on:
+      nats:
+        condition: service_healthy
+    volumes:
+      - autonomic-workspace:/root/.autonomic
+    environment:
+      - AUTONOMIC_NATS_URL=nats://nats:4222
+    command: ["agent-eyes", "serve"]
+
+  agent-mouth:
+    image: autonomic-benchmarks:latest
+    depends_on:
+      nats:
+        condition: service_healthy
+    volumes:
+      - autonomic-workspace:/root/.autonomic
+    environment:
+      - AUTONOMIC_NATS_URL=nats://nats:4222
+    command: ["agent-mouth", "serve"]
 
   test-runner:
     image: python:3.11-alpine
@@ -54,6 +128,8 @@ services:
       nats:
         condition: service_healthy
       agent-brain:
+        condition: service_started
+      agent-heart:
         condition: service_started
     volumes:
       - ./tests:/tests

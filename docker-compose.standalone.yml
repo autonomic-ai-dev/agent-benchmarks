@@ -1,31 +1,61 @@
 version: '3.8'
 
 services:
-  # Base image containing all pre-installed organs
   autonomic-base:
     build:
       context: ..
       dockerfile: agent-benchmarks/docker/Dockerfile.agent
     image: autonomic-benchmarks:latest
     profiles:
-      - donotstart # We just use this to build the image
+      - donotstart
 
   agent-brain:
     image: autonomic-benchmarks:latest
     volumes:
       - autonomic-workspace:/root/.autonomic
-    ports:
-      - "3100:3100"
+    profiles:
+      - agent-brain
     command: ["agent-brain", "serve"]
+
+  agent-spine:
+    image: autonomic-benchmarks:latest
+    volumes:
+      - autonomic-workspace:/root/.autonomic
+    profiles:
+      - agent-spine
+    command: ["agent-spine", "serve"]
+
+  agent-heart:
+    image: autonomic-benchmarks:latest
+    volumes:
+      - autonomic-workspace:/root/.autonomic
+    profiles:
+      - agent-heart
+    command: ["agent-heart", "serve"]
+
+  agent-nerves:
+    image: autonomic-benchmarks:latest
+    volumes:
+      - autonomic-workspace:/root/.autonomic
+    profiles:
+      - agent-nerves
+    command: ["agent-nerves", "serve"]
+
+  agent-muscle:
+    image: autonomic-benchmarks:latest
+    volumes:
+      - autonomic-workspace:/root/.autonomic
+    profiles:
+      - agent-muscle
+    command: ["agent-muscle", "serve"]
 
   test-runner:
     image: python:3.11-alpine
-    depends_on:
-      agent-brain:
-        condition: service_started
     volumes:
       - ./tests:/tests
     working_dir: /tests
+    # To test a standalone agent, you can pass an environment var indicating which one to test
+    # e.g., TEST_TARGET=agent-brain
     command: >
       sh -c "pip install -r requirements.txt && pytest standalone/"
 
