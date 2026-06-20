@@ -1,0 +1,50 @@
+# This Dockerfile is meant to be built from the root of the autonomic-ai-dev workspace.
+# It expects the source code for the specific organ to be available.
+
+FROM rust:1.79-slim as builder
+
+# Install build dependencies
+RUN apt-get update && apt-get install -y \
+    pkg-config \
+    libssl-dev \
+    git \
+    build-essential \
+    && rm -rf /var/lib/apt/lists/*
+
+ARG ORGAN
+
+WORKDIR /usr/src/app
+
+# We copy the entire workspace to build the specific organ
+# In a real CI environment, you might only copy the specific crate and its local dependencies
+COPY . .
+
+RUN cd ${ORGAN} && cargo build --release
+
+# -----------------
+# Runtime stage
+# -----------------
+FROM debian:bookworm-slim
+
+RUN apt-get update && apt-get install -y \
+    ca-certificates \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
+
+ARG ORGAN
+
+# Copy the compiled binary from the builder stage
+COPY --from=builder /usr/src/app/${ORGAN}/target/release/${ORGAN} /usr/local/bin/${ORGAN}
+
+# Make sure it's executable
+RUN chmod +x /usr/local/bin/${ORGAN}
+
+# Create autonomic root directory
+RUN mkdir -p /root/.autonomic && chmod 777 /root/.autonomic
+
+# Expose generic port (each daemon uses a different one, but we map them in compose)
+EXPOSE 3100 3101 3102 3103 3104 3105 3106
+
+# The command is overridden by docker-compose
+ENTRYPOINT ["sh", "-c", "exec $0 \"$@\""]
+CMD ["${ORGAN}", "--version"]

@@ -1,0 +1,52 @@
+version: '3.8'
+
+services:
+  nats:
+    image: nats:alpine
+    command: ["-js", "--store_dir", "/data"]
+    ports:
+      - "4222:4222"
+      - "8222:8222"
+    volumes:
+      - nats-data:/data
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:8222/healthz"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  agent-body:
+    build:
+      context: ..
+      dockerfile: agent-benchmarks/docker/Dockerfile.agent
+      args:
+        ORGAN: agent-body
+    depends_on:
+      nats:
+        condition: service_healthy
+    volumes:
+      - autonomic-workspace:/root/.autonomic
+    environment:
+      - AUTONOMIC_NATS_URL=nats://nats:4222
+    command: ["start"]
+
+  agent-brain:
+    build:
+      context: ..
+      dockerfile: agent-benchmarks/docker/Dockerfile.agent
+      args:
+        ORGAN: agent-brain
+    depends_on:
+      nats:
+        condition: service_healthy
+    volumes:
+      - autonomic-workspace:/root/.autonomic
+    environment:
+      - AUTONOMIC_NATS_URL=nats://nats:4222
+    ports:
+      - "3100:3100"
+    command: ["serve"]
+
+volumes:
+  nats-data:
+  autonomic-workspace:
