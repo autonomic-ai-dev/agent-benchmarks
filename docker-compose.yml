@@ -48,6 +48,19 @@ services:
       - "3100:3100"
     command: ["agent-brain", "serve"]
 
+  test-runner:
+    image: python:3.11-alpine
+    depends_on:
+      nats:
+        condition: service_healthy
+      agent-brain:
+        condition: service_started
+    volumes:
+      - ./tests:/tests
+    working_dir: /tests
+    command: >
+      sh -c "pip install -r requirements.txt && pytest integration/"
+
 volumes:
   nats-data:
   autonomic-workspace:
