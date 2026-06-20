@@ -36,6 +36,11 @@ tasks:
     cmds:
       - docker-compose -f docker-compose.standalone.yml run --rm test-runner sh -c "pip install -r requirements.txt && pytest standalone/test_{{.ORGAN}}_features.py -v"
 
+  test:edge-cases:
+    desc: "Run edge case and boundary condition tests for all organs"
+    cmds:
+      - docker-compose -f docker-compose.standalone.yml run --rm test-runner sh -c "pip install -r requirements.txt && pytest standalone/test_edge_cases.py -v"
+
   test:integration:
     desc: "Spin up the full autonomic cluster and run integration tests"
     deps: [clean]
@@ -69,6 +74,19 @@ tasks:
     cmds:
       - python benchmarks/model_comparison.py --model {{.MODEL}} --provider {{.PROVIDER}} --build-sandbox
 
+  benchmark:matrix:
+    desc: "Run resource matrix benchmark (tests organs under different RAM/CPU constraints)"
+    vars:
+      PROFILES: '{{.PROFILES | default ""}}'
+      ORGANS: '{{.ORGANS | default ""}}'
+    cmds:
+      - python benchmarks/resource_matrix.py {{if .PROFILES}}--profiles {{.PROFILES}}{{end}} {{if .ORGANS}}--organs {{.ORGANS}}{{end}}
+
+  benchmark:matrix:quick:
+    desc: "Run quick resource matrix (minimal + standard profiles only)"
+    cmds:
+      - python benchmarks/resource_matrix.py --profiles minimal standard
+
   # ---------------------------------------------------------------------------
   # Scorecard
   # ---------------------------------------------------------------------------
@@ -87,10 +105,12 @@ tasks:
     cmds:
       - task: test:smoke
       - task: test:standalone
+      - task: test:edge-cases
       - task: test:integration
       - task: benchmark:stress
       - task: benchmark:brain
       - task: benchmark:accuracy
+      - task: benchmark:matrix:quick
       - task: scorecard
 
   # ---------------------------------------------------------------------------
