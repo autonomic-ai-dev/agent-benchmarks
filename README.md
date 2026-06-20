@@ -20,13 +20,15 @@ It provides a unified way to spin up the entire cluster of daemons and execute r
 
 2. Run the integration test suite:
    ```bash
-   docker-compose -f docker-compose.integration.yml up --build --abort-on-container-exit
+   task test:integration
    ```
 
-3. Run the standalone test suite:
+3. Run the standalone test suite for a specific agent:
    ```bash
-   docker-compose -f docker-compose.standalone.yml up --build --abort-on-container-exit
+   task test:standalone ORGAN=agent-brain
    ```
+
+You can view all available automation commands by running `task`.
 
 ## Creating new tests
 

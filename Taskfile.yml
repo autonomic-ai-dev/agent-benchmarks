@@ -1,0 +1,31 @@
+version: '3'
+
+tasks:
+  default:
+    cmds:
+      - task --list
+
+  build:
+    desc: "Build the generic autonomic-base docker image (fetches latest release binaries)"
+    cmds:
+      - docker-compose -f docker-compose.integration.yml build autonomic-base
+
+  test:integration:
+    desc: "Spin up the full autonomic cluster and run the integration test suite"
+    deps: [clean]
+    cmds:
+      - docker-compose -f docker-compose.integration.yml up --build --abort-on-container-exit
+
+  test:standalone:
+    desc: "Run the standalone test suite for a specific organ (e.g., task test:standalone ORGAN=agent-brain)"
+    deps: [clean]
+    requires:
+      vars: [ORGAN]
+    cmds:
+      - docker-compose -f docker-compose.standalone.yml --profile {{.ORGAN}} up --build --abort-on-container-exit
+
+  clean:
+    desc: "Tear down all running test containers and remove isolated volumes"
+    cmds:
+      - docker-compose -f docker-compose.integration.yml down -v || true
+      - docker-compose -f docker-compose.standalone.yml down -v || true
