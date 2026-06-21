@@ -123,6 +123,52 @@ tasks:
     cmds:
       - python benchmarks/architecture_bench.py
 
+  benchmark:model:multi:
+    desc: "Run multi-model batch comparison (e.g., task benchmark:model:multi MODELS=qwen2.5-coder:1.5b,qwen2.5-coder:7b)"
+    vars:
+      MODELS: '{{.MODELS | default "qwen2.5-coder:1.5b,qwen2.5-coder:3b,qwen2.5-coder:7b"}}'
+      PROVIDER: '{{.PROVIDER | default "ollama"}}'
+    cmds:
+      - python benchmarks/model_comparison.py --models {{.MODELS}} --provider {{.PROVIDER}} --build-sandbox
+
+  benchmark:humaneval:
+    desc: "Run HumanEval pass@1 benchmark with agent-brain context (e.g., task benchmark:humaneval MODEL=qwen2.5-coder:7b)"
+    vars:
+      MODEL: '{{.MODEL | default "qwen2.5-coder:7b"}}'
+      NUM: '{{.NUM | default ""}}'
+    cmds:
+      - python benchmarks/humaneval_bench.py --model {{.MODEL}} {{if .NUM}}--num-problems {{.NUM}}{{end}} --build-sandbox
+
+  benchmark:humaneval:multi:
+    desc: "Run HumanEval across multiple models"
+    vars:
+      MODELS: '{{.MODELS | default "qwen2.5-coder:1.5b,qwen2.5-coder:7b"}}'
+      NUM: '{{.NUM | default "20"}}'
+    cmds:
+      - python benchmarks/humaneval_bench.py --models {{.MODELS}} --num-problems {{.NUM}} --build-sandbox
+
+  benchmark:lora:
+    desc: "Run LoRA fine-tuning evaluation (requires base + fine-tuned model in Ollama)"
+    vars:
+      BASE: '{{.BASE | default "qwen2.5-coder:7b"}}'
+      LORA: '{{.LORA | default ""}}'
+    cmds:
+      - python benchmarks/lora_eval.py --base-model {{.BASE}} {{if .LORA}}--lora-model {{.LORA}}{{end}}
+
+  benchmark:architecture:chaos:
+    desc: "Run architecture claims with chaos engineering tests"
+    cmds:
+      - python benchmarks/architecture_bench.py --chaos
+
+  generate:trajectories:
+    desc: "Generate synthetic training trajectories for LoRA bootstrapping"
+    vars:
+      COUNT: '{{.COUNT | default "500"}}'
+      OUTPUT: '{{.OUTPUT | default "lora_adapters/synthetic_train.jsonl"}}'
+      SEED: '{{.SEED | default "42"}}'
+    cmds:
+      - python benchmarks/synthetic_trajectories.py --count {{.COUNT}} --output {{.OUTPUT}} --seed {{.SEED}} --validate
+
   # ---------------------------------------------------------------------------
   # Scorecard
   # ---------------------------------------------------------------------------

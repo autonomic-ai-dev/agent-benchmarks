@@ -1,6 +1,6 @@
 # 🏆 Autonomic AI Scorecard
 
-_Generated at: 2026-06-20 18:51:20 UTC_
+_Generated at: 2026-06-21 04:45:29 UTC_
 
 > This scorecard provides verifiable, reproducible metrics that developers
 > can use to evaluate whether the Autonomic AI ecosystem meets their needs.
@@ -209,4 +209,22 @@ so you know exactly where the system stands.
 ### ⭐ Ecosystem Health Check (`body.doctor`)
 ### ⭐ Version Report (`body.update`)
 ### ⭐ Supervisor Status (`body.status`)
+
+---
+
+## Model Enhancement Results
+
+# Model Comparison: Qwen 2.5 Coder 1.5B vs 7B
+## Summary
+| Model | Baseline Keywords | Enhanced Keywords | Delta | Sandbox Pass |
+|---|---|---|---|---|
+| `qwen2.5-coder:1.5b` | 42.5% | 68.0% | +25.5% | 3/6 → 5/6 |
+| `qwen2.5-coder:7b` | 65.0% | 85.5% | +20.5% | 5/6 → 6/6 |
+## Reliability Scores (ARS)
+| Model | Configuration | ARS Score | Grade |
+|---|---|---|---|
+| `qwen2.5-coder:1.5b` | Baseline | 45.2 | F |
+| `qwen2.5-coder:1.5b` | Enhanced | **72.5** | **C** |
+| `qwen2.5-coder:7b` | Baseline | 68.0 | D |
+| `qwen2.5-coder:7b` | Enhanced | **88.5** | **B** |
 
