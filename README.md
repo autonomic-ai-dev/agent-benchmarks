@@ -1,8 +1,8 @@
 # agent-benchmarks
 
-**Comprehensive testing, benchmarking, and adoption-confidence reporting for the Autonomic AI ecosystem.**
+**Cloud-Native role: Conformance testing** (Sonobuoy analog) — tiered CI, integration compose, and adoption scorecards for the Autonomic platform.
 
-Part of the **[Autonomic AI](https://github.com/autonomic-ai-dev/agent-body)** stack. Validates every organ binary, runs Docker-based integration tests against a full cluster, and produces graded scorecards for CI and release gates.
+Part of the **[Autonomic AI](https://github.com/autonomic-ai-dev/agent-body)** stack. Validates every daemon binary, runs Docker-based integration tests against a full mesh, and produces graded scorecards for release gates.
 
 | Standalone | Integrated |
 |------------|------------|
@@ -16,10 +16,10 @@ Part of the **[Autonomic AI](https://github.com/autonomic-ai-dev/agent-body)** s
 
 | Problem | agent-benchmarks answer |
 |---------|------------------------|
-| Organs ship without cross-checks | **6-tier pipeline** — smoke → standalone → integration → stress → accuracy → scorecard |
-| CLI drift breaks silently | **Standalone tests** — every organ feature exercised in Docker |
-| "Does the cluster work?" unknown | **Integration compose** — NATS + spine + all daemons |
-| No release confidence artifact | **Scorecard + ecosystem bench** — 43 features graded with thresholds |
+| Components ship without cross-checks | **6-tier conformance pipeline** — smoke → standalone → integration → stress → accuracy → scorecard |
+| CLI drift breaks silently | **Standalone tests** — every daemon exercised in Docker |
+| "Is the mesh healthy?" unknown | **Integration compose** — NATS + spine + all daemons |
+| No release confidence artifact | **Scorecard** — features graded with latency/token SLAs |
 
 ```mermaid
 graph TD
