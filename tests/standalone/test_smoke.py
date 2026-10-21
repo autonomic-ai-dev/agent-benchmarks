@@ -1,4 +1,5 @@
 import pytest
+import re
 import subprocess
 import os
 
@@ -42,7 +43,7 @@ def test_autonomic_doctor():
     """autonomic doctor must find brain, heart, and nerves on PATH."""
     result = _run(["autonomic", "doctor"], capture_output=True, text=True)
     for organ in ["brain", "heart", "nerves"]:
-        assert f"✓ {organ}" in result.stdout, f"doctor did not find {organ}"
+        assert re.search(rf"\[\d+/\d+\] {organ}\s+DONE", result.stdout), f"doctor did not find {organ}"
 
 
 # ---------------------------------------------------------------------------
