@@ -111,6 +111,7 @@ edges:
         
         my_env = os.environ.copy()
         my_env["RUST_LOG"] = "info"
+        my_env["AUTONOMIC_BUDGET_GATE"] = "0"
         result = subprocess.run(
             ["agent-spine", "run", wf_path],
             capture_output=True, text=True, timeout=15, env=my_env

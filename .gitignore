@@ -1,6 +1,7 @@
 __pycache__/
 *.py[cod]
 .pytest_cache/
+docs/superpowers
 .python-version
 output.log
 error.log
